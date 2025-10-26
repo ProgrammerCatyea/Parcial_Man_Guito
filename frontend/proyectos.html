@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Parcial_Man_Guito | Proyectos</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<header>
+  <h1>Proyectos</h1>
+  <nav><a href="index.html">Inicio</a> | <a href="miembros.html">Miembros</a> | <a href="asignaciones.html">Asignaciones</a></nav>
+</header>
+<div class="container">
+  <div class="card">
+    <h2>Crear proyecto</h2>
+    <form id="fProy">
+      <input name="nombre" placeholder="Nombre" required />
+      <input name="descripcion" placeholder="Descripción" required />
+      <input type="number" step="0.01" name="presupuesto" placeholder="Presupuesto" required />
+      <select name="estado">
+        <option value="en_progreso">en_progreso</option>
+        <option value="pausado">pausado</option>
+        <option value="finalizado">finalizado</option>
+      </select>
+      <input type="number" name="gerente_id" placeholder="Gerente ID (opcional)" />
+      <button>Crear</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Lista</h2>
+    <div id="listaProy" class="grid"></div>
+  </div>
+</div>
+<script src="js/app.js"></script>
+<script>
+const { listarProyectos, crearProyecto, eliminarProyecto, mount, el } = PMG;
+
+async function cargar(){
+  const datos = await listarProyectos();
+  mount('#listaProy', datos, p => `
+    <div class="card">
+      <b>${p.nombre}</b> <span class="badge">${p.estado}</span>
+      <div class="small">${p.descripcion}</div>
+      <div class="small">Presupuesto: $${p.presupuesto}</div>
+      <div class="small">Gerente: ${p.gerente ? p.gerente.nombre : '—'}</div>
+      <div class="small">Equipo: ${p.miembros.map(m=>m.nombre).join(', ') || '—'}</div>
+      <button onclick="borrar(${p.id})">Eliminar</button>
+    </div>
+  `);
+}
+async function borrar(id){
+  try{ await eliminarProyecto(id); cargar(); } catch(e){ alert(e.message); }
+}
+el('#fProy').addEventListener('submit', async ev=>{
+  ev.preventDefault();
+  const fd = new FormData(ev.target); const d = Object.fromEntries(fd.entries());
+  d.presupuesto = parseFloat(d.presupuesto);
+  if(!d.gerente_id) delete d.gerente_id; else d.gerente_id = parseInt(d.gerente_id);
+  try{ await crearProyecto(d); ev.target.reset(); cargar(); } catch(e){ alert(e.message); }
+});
+cargar();
+</script>
+</body>
+</html>

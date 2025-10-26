@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Parcial_Man_Guito | Inicio</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<header>
+  <h1>Parcial_Man_Guito – Gestor de Proyectos</h1>
+  <nav>
+    <a href="proyectos.html">Proyectos</a>
+    <a href="miembros.html">Miembros</a>
+    <a href="asignaciones.html">Asignaciones</a>
+  </nav>
+</header>
+<div class="container">
+  <div class="grid">
+    <div class="card"><b>Proyectos</b><div class="small">Total</div><h2 id="kpi-proy">0</h2></div>
+    <div class="card"><b>En progreso</b><div class="small">Activos</div><h2 id="kpi-act">0</h2></div>
+    <div class="card"><b>Finalizados</b><div class="small">Cerrados</div><h2 id="kpi-fin">0</h2></div>
+    <div class="card"><b>Presupuesto</b><div class="small">Suma</div><h2 id="kpi-pres">$0.00</h2></div>
+    <div class="card"><b>Miembros</b><div class="small">Total</div><h2 id="kpi-miem">0</h2></div>
+  </div>
+</div>
+<script src="js/app.js"></script>
+<script>PMG.dashboardResumen();</script>
+</body>
+</html>
