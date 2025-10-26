@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Parcial_Man_Guito | Miembros</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<header>
+  <h1>Miembros</h1>
+  <nav><a href="index.html">Inicio</a> | <a href="proyectos.html">Proyectos</a> | <a href="asignaciones.html">Asignaciones</a></nav>
+</header>
+<div class="container">
+  <div class="card">
+    <h2>Crear miembro</h2>
+    <form id="fM">
+      <input name="nombre" placeholder="Nombre" required />
+      <input name="rol_general" placeholder="Rol general (PM, Backend, QA)" required />
+      <select name="estado"><option value="activo">activo</option><option value="inactivo">inactivo</option></select>
+      <button>Crear</button>
+    </form>
+  </div>
+  <div class="card">
+    <h2>Lista</h2>
+    <div id="listaM" class="grid"></div>
+  </div>
+</div>
+<script src="js/app.js"></script>
+<script>
+const { listarMiembros, crearMiembro, eliminarMiembro, mount, el } = PMG;
+
+async function cargar(){
+  const datos = await listarMiembros();
+  mount('#listaM', datos, m => `
+    <div class="card">
+      <b>${m.nombre}</b> <span class="badge">${m.estado}</span>
+      <div class="small">${m.rol_general}</div>
+      <button onclick="borrar(${m.id})">Eliminar</button>
+    </div>
+  `);
+}
+async function borrar(id){
+  try{ await eliminarMiembro(id); cargar(); } catch(e){ alert(e.message); }
+}
+el('#fM').addEventListener('submit', async ev=>{
+  ev.preventDefault();
+  const d = Object.fromEntries(new FormData(ev.target).entries());
+  try{ await crearMiembro(d); ev.target.reset(); cargar(); } catch(e){ alert(e.message); }
+});
+cargar();
+</script>
+</body>
+</html>

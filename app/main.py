@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from .core.config import settings
 from .core.database import Base, engine
-from .routes import proyectos_router, miembros_router, asignaciones_router
+from .routes import proyectos_router, miembros_router, asignacion_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -13,7 +13,8 @@ app = FastAPI(
 
 app.include_router(miembros_router.router)
 app.include_router(proyectos_router.router)
-app.include_router(asignaciones_router.router)
+app.include_router(asignacion_router.router)
+
 
 @app.get("/", tags=["Inicio"])
 def root():

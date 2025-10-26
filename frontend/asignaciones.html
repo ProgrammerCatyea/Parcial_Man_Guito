@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Parcial_Man_Guito | Asignaciones</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<header>
+  <h1>Asignaciones</h1>
+  <nav><a href="index.html">Inicio</a> | <a href="proyectos.html">Proyectos</a> | <a href="miembros.html">Miembros</a></nav>
+</header>
+<div class="container">
+  <div class="card">
+    <h2>Asignar miembro a proyecto</h2>
+    <form id="fA">
+      <input type="number" name="miembro_id" placeholder="Miembro ID" required />
+      <input type="number" name="proyecto_id" placeholder="Proyecto ID" required />
+      <input name="rol_en_proyecto" placeholder="Rol en proyecto (opcional)" />
+      <button>Asignar</button>
+    </form>
+  </div>
+</div>
+<script src="js/app.js"></script>
+<script>
+const { asignar, el } = PMG;
+el('#fA').addEventListener('submit', async ev=>{
+  ev.preventDefault();
+  const d = Object.fromEntries(new FormData(ev.target).entries());
+  if(!d.rol_en_proyecto) d.rol_en_proyecto = 'miembro';
+  d.miembro_id = parseInt(d.miembro_id);
+  d.proyecto_id = parseInt(d.proyecto_id);
+  try{ await asignar(d); alert('Asignado'); ev.target.reset(); } catch(e){ alert(e.message); }
+});
+</script>
+</body>
+</html>

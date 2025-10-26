@@ -1,20 +1,28 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Optional
 
+
 class MiembroBase(BaseModel):
-    nombre: str = Field(min_length=2, max_length=120)
-    rol_general: str = Field(min_length=2, max_length=80)
-    estado: str = Field(pattern="^(activo|inactivo)$")
+    nombre: str
+    cargo: str
+    especialidad: Optional[str] = None
+    estado: Optional[str] = "Activo"
+
 
 class MiembroCreate(MiembroBase):
+    """Schema para crear un nuevo miembro."""
     pass
 
 class MiembroUpdate(BaseModel):
+    """Schema para actualizar un miembro existente."""
     nombre: Optional[str] = None
-    rol_general: Optional[str] = None
+    cargo: Optional[str] = None
+    especialidad: Optional[str] = None
     estado: Optional[str] = None
 
-class MiembroOut(MiembroBase):
+
+class MiembroResponse(MiembroBase):
     id: int
+
     class Config:
-        from_attributes = True
+        orm_mode = True
