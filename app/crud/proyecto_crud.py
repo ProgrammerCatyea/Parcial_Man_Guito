@@ -3,7 +3,6 @@ from app.models.proyecto import Proyecto, ProyectoEliminado
 from app.schemas.proyecto import ProyectoCreate, ProyectoUpdate
 from datetime import date
 
-
 def crear_proyecto(db: Session, proyecto: ProyectoCreate):
     nuevo_proyecto = Proyecto(
         nombre=proyecto.nombre,
@@ -25,6 +24,7 @@ def obtener_proyectos(db: Session):
 def obtener_proyecto_por_id(db: Session, proyecto_id: int):
     return db.query(Proyecto).filter(Proyecto.id == proyecto_id).first()
 
+
 def actualizar_proyecto(db: Session, proyecto_id: int, proyecto_actualizado: ProyectoUpdate):
     proyecto = db.query(Proyecto).filter(Proyecto.id == proyecto_id).first()
     if not proyecto:
@@ -43,7 +43,7 @@ def eliminar_proyecto(db: Session, proyecto_id: int, motivo: str = "Sin motivo e
     if not proyecto:
         return None
 
-   
+
     eliminado = ProyectoEliminado(
         nombre=proyecto.nombre,
         descripcion=proyecto.descripcion,
@@ -58,10 +58,8 @@ def eliminar_proyecto(db: Session, proyecto_id: int, motivo: str = "Sin motivo e
     db.commit()
     return eliminado
 
-
 def obtener_proyectos_eliminados(db: Session):
     return db.query(ProyectoEliminado).all()
-
 
 def generar_reporte_eliminados(db: Session, ruta_archivo: str = "reporte_proyectos_eliminados.txt"):
     eliminados = db.query(ProyectoEliminado).all()
