@@ -1,51 +1,36 @@
 from sqlalchemy.orm import Session
-from app.models.proyecto import Proyecto, EstadoProyecto
+from app.models.proyecto import Proyecto, ProyectoEliminado
 from app.schemas.proyecto import ProyectoCreate, ProyectoUpdate
 from datetime import date
 
 
-def crear_proyecto(db: Session, proyecto_data: ProyectoCreate):
-    """Crea un nuevo proyecto si no existe otro con el mismo nombre."""
-    existente = db.query(Proyecto).filter(Proyecto.nombre == proyecto_data.nombre).first()
-    if existente:
-        return None
-
+def crear_proyecto(db: Session, proyecto: ProyectoCreate):
     nuevo_proyecto = Proyecto(
-        nombre=proyecto_data.nombre,
-        descripcion=proyecto_data.descripcion,
-        fecha_inicio=proyecto_data.fecha_inicio or date.today(),
-        fecha_fin=proyecto_data.fecha_fin,
-        estado=proyecto_data.estado or EstadoProyecto.PLANIFICADO
+        nombre=proyecto.nombre,
+        descripcion=proyecto.descripcion,
+        fecha_inicio=proyecto.fecha_inicio,
+        fecha_fin=proyecto.fecha_fin,
+        estado=proyecto.estado
     )
-
     db.add(nuevo_proyecto)
     db.commit()
     db.refresh(nuevo_proyecto)
     return nuevo_proyecto
 
 
-def listar_proyectos(db: Session, estado: str | None = None):
-    """Lista todos los proyectos, con opción de filtrar por estado."""
-    query = db.query(Proyecto)
-    if estado:
-        query = query.filter(Proyecto.estado == estado)
-    return query.all()
+def obtener_proyectos(db: Session):
+    return db.query(Proyecto).all()
 
 
-
-def obtener_proyecto(db: Session, proyecto_id: int):
-    """Obtiene un proyecto por su ID."""
+def obtener_proyecto_por_id(db: Session, proyecto_id: int):
     return db.query(Proyecto).filter(Proyecto.id == proyecto_id).first()
 
-
-
-def actualizar_proyecto(db: Session, proyecto_id: int, proyecto_data: ProyectoUpdate):
-    """Actualiza los datos de un proyecto existente."""
+def actualizar_proyecto(db: Session, proyecto_id: int, proyecto_actualizado: ProyectoUpdate):
     proyecto = db.query(Proyecto).filter(Proyecto.id == proyecto_id).first()
     if not proyecto:
         return None
 
-    for key, value in proyecto_data.model_dump(exclude_unset=True).items():
+    for key, value in proyecto_actualizado.dict(exclude_unset=True).items():
         setattr(proyecto, key, value)
 
     db.commit()
@@ -53,12 +38,44 @@ def actualizar_proyecto(db: Session, proyecto_id: int, proyecto_data: ProyectoUp
     return proyecto
 
 
-def eliminar_proyecto(db: Session, proyecto_id: int):
-    """Elimina un proyecto de la base de datos."""
+def eliminar_proyecto(db: Session, proyecto_id: int, motivo: str = "Sin motivo especificado"):
     proyecto = db.query(Proyecto).filter(Proyecto.id == proyecto_id).first()
     if not proyecto:
         return None
 
+   
+    eliminado = ProyectoEliminado(
+        nombre=proyecto.nombre,
+        descripcion=proyecto.descripcion,
+        fecha_inicio=proyecto.fecha_inicio,
+        fecha_fin=proyecto.fecha_fin,
+        estado=proyecto.estado,
+        motivo_eliminacion=motivo
+    )
+
+    db.add(eliminado)
     db.delete(proyecto)
     db.commit()
-    return proyecto
+    return eliminado
+
+
+def obtener_proyectos_eliminados(db: Session):
+    return db.query(ProyectoEliminado).all()
+
+
+def generar_reporte_eliminados(db: Session, ruta_archivo: str = "reporte_proyectos_eliminados.txt"):
+    eliminados = db.query(ProyectoEliminado).all()
+    if not eliminados:
+        return None
+
+    with open(ruta_archivo, "w", encoding="utf-8") as archivo:
+        archivo.write("=== REPORTE DE PROYECTOS ELIMINADOS ===\n\n")
+        for p in eliminados:
+            archivo.write(f"ID: {p.id}\n")
+            archivo.write(f"Nombre: {p.nombre}\n")
+            archivo.write(f"Estado: {p.estado}\n")
+            archivo.write(f"Motivo: {p.motivo_eliminacion}\n")
+            archivo.write(f"Fecha de inicio: {p.fecha_inicio}\n")
+            archivo.write(f"Fecha de fin: {p.fecha_fin}\n")
+            archivo.write("-" * 40 + "\n")
+    return ruta_archivo
