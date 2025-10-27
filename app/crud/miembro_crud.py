@@ -1,20 +1,12 @@
 from sqlalchemy.orm import Session
-from app.models.miembro import Miembro
+from app.models.miembro import Miembro, MiembroEliminado
 from app.schemas.miembro import MiembroCreate, MiembroUpdate
-from typing import List, Optional
-
 
 def crear_miembro(db: Session, miembro: MiembroCreate):
-    """Crea un nuevo miembro si no existe otro con el mismo nombre."""
-    existente = db.query(Miembro).filter(Miembro.nombre == miembro.nombre).first()
-    if existente:
-        return None
-
     nuevo_miembro = Miembro(
         nombre=miembro.nombre,
-        cargo=miembro.cargo,
-        especialidad=miembro.especialidad,
-        estado=miembro.estado,
+        rol=miembro.rol,
+        correo=miembro.correo
     )
     db.add(nuevo_miembro)
     db.commit()
@@ -22,41 +14,61 @@ def crear_miembro(db: Session, miembro: MiembroCreate):
     return nuevo_miembro
 
 
-def listar_miembros(db: Session, especialidad: Optional[str] = None, estado: Optional[str] = None) -> List[Miembro]:
-    """Devuelve todos los miembros, con filtros opcionales."""
-    query = db.query(Miembro)
-    if especialidad:
-        query = query.filter(Miembro.especialidad.ilike(f"%{especialidad}%"))
-    if estado:
-        query = query.filter(Miembro.estado.ilike(f"%{estado}%"))
-    return query.all()
+def obtener_miembros(db: Session):
+    return db.query(Miembro).all()
 
 
-def obtener_miembro(db: Session, miembro_id: int) -> Optional[Miembro]:
-    """Obtiene un miembro por ID."""
+def obtener_miembro_por_id(db: Session, miembro_id: int):
     return db.query(Miembro).filter(Miembro.id == miembro_id).first()
 
 
-def actualizar_miembro(db: Session, miembro_id: int, miembro: MiembroUpdate):
-    """Actualiza los datos de un miembro existente."""
-    db_miembro = db.query(Miembro).filter(Miembro.id == miembro_id).first()
-    if not db_miembro:
+def actualizar_miembro(db: Session, miembro_id: int, miembro_actualizado: MiembroUpdate):
+    miembro = db.query(Miembro).filter(Miembro.id == miembro_id).first()
+    if not miembro:
         return None
 
-    for key, value in miembro.dict(exclude_unset=True).items():
-        setattr(db_miembro, key, value)
+    for key, value in miembro_actualizado.dict(exclude_unset=True).items():
+        setattr(miembro, key, value)
 
     db.commit()
-    db.refresh(db_miembro)
-    return db_miembro
+    db.refresh(miembro)
+    return miembro
 
 
-def eliminar_miembro(db: Session, miembro_id: int):
-    """Elimina un miembro por su ID."""
-    db_miembro = db.query(Miembro).filter(Miembro.id == miembro_id).first()
-    if not db_miembro:
+def eliminar_miembro(db: Session, miembro_id: int, motivo: str = "Sin motivo especificado"):
+    miembro = db.query(Miembro).filter(Miembro.id == miembro_id).first()
+    if not miembro:
         return None
 
-    db.delete(db_miembro)
+    eliminado = MiembroEliminado(
+        nombre=miembro.nombre,
+        rol=miembro.rol,
+        correo=miembro.correo,
+        motivo_eliminacion=motivo
+    )
+
+    db.add(eliminado)
+    db.delete(miembro)
     db.commit()
-    return True
+    return eliminado
+
+
+def obtener_miembros_eliminados(db: Session):
+    return db.query(MiembroEliminado).all()
+
+
+def generar_reporte_eliminados(db: Session, ruta_archivo: str = "reporte_miembros_eliminados.txt"):
+    eliminados = db.query(MiembroEliminado).all()
+    if not eliminados:
+        return None
+
+    with open(ruta_archivo, "w", encoding="utf-8") as archivo:
+        archivo.write("=== REPORTE DE MIEMBROS ELIMINADOS ===\n\n")
+        for m in eliminados:
+            archivo.write(f"ID: {m.id}\n")
+            archivo.write(f"Nombre: {m.nombre}\n")
+            archivo.write(f"Rol: {m.rol}\n")
+            archivo.write(f"Correo: {m.correo}\n")
+            archivo.write(f"Motivo: {m.motivo_eliminacion}\n")
+            archivo.write("-" * 40 + "\n")
+    return ruta_archivo
