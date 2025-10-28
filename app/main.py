@@ -7,7 +7,7 @@ from app.routes import proyectos_router, miembros_router, asignacion_router
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="MAN_GUITO - TU AYUDANTE Y GESTOR"
+    title="MAN_GUITO - TU AYUDANTE Y GESTOR",
     description="API para la gestión avanzada de proyectos, miembros y asignaciones.",
     version="2.0.0"
 )
