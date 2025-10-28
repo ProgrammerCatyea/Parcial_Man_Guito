@@ -1,44 +1,65 @@
 from sqlalchemy.orm import Session
-from ..models.asignacion import Asignacion
-from ..models.miembro import Miembro
-from ..models.proyecto import Proyecto
+from app.models.asignacion import Asignacion
+from app.models.miembro import Miembro
+from app.models.proyecto import Proyecto
+from app.schemas.asignacion import AsignacionCreate
+from fastapi import HTTPException
+from datetime import datetime
 
-def asignar(db: Session, data: dict):
-    m = db.get(Miembro, data["miembro_id"])
-    p = db.get(Proyecto, data["proyecto_id"])
-    if not m:
-        return None, "miembro_invalido"
-    if not p:
-        return None, "proyecto_invalido"
-    dup = db.query(Asignacion).filter(
-        Asignacion.miembro_id == data["miembro_id"],
-        Asignacion.proyecto_id == data["proyecto_id"]
-    ).first()
-    if dup:
-        return None, "duplicada"
-    a = Asignacion(**data)
-    db.add(a)
+
+def crear_asignacion(db: Session, asignacion: AsignacionCreate):
+    miembro = db.query(Miembro).filter(Miembro.id == asignacion.miembro_id, Miembro.eliminado == False).first()
+    proyecto = db.query(Proyecto).filter(Proyecto.id == asignacion.proyecto_id, Proyecto.eliminado == False).first()
+
+    if not miembro or not proyecto:
+        raise HTTPException(status_code=404, detail="Miembro o proyecto no encontrado o eliminado")
+
+    nueva_asignacion = Asignacion(
+        miembro_id=asignacion.miembro_id,
+        proyecto_id=asignacion.proyecto_id,
+        fecha_asignacion=datetime.now(),
+    )
+
+    db.add(nueva_asignacion)
     db.commit()
-    db.refresh(a)
-    return a, None
+    db.refresh(nueva_asignacion)
+    return nueva_asignacion
 
-def desasignar(db: Session, asignacion_id: int):
-    a = db.get(Asignacion, asignacion_id)
-    if not a:
-        return "no_encontrado"
-    db.delete(a)
+
+def obtener_asignaciones(db: Session):
+    return db.query(Asignacion).filter(Asignacion.eliminado == False).all()
+
+
+def eliminar_asignacion(db: Session, asignacion_id: int):
+    asignacion = db.query(Asignacion).filter(Asignacion.id == asignacion_id, Asignacion.eliminado == False).first()
+    if not asignacion:
+        raise HTTPException(status_code=404, detail="Asignación no encontrada")
+
+    asignacion.eliminado = True
+    asignacion.fecha_eliminacion = datetime.now()
     db.commit()
-    return None
+    return {"mensaje": f"Asignación ID {asignacion.id} eliminada correctamente."}
 
-def miembros_de_proyecto(db: Session, proyecto_id: int):
-    if not db.get(Proyecto, proyecto_id):
-        return None, "proyecto_invalido"
-    asigs = db.query(Asignacion).filter(Asignacion.proyecto_id == proyecto_id).all()
-    return [db.get(Miembro, a.miembro_id) for a in asigs], None
 
-def proyectos_de_miembro(db: Session, miembro_id: int):
-    if not db.get(Miembro, miembro_id):
-        return None, "miembro_invalido"
-    asigs = db.query(Asignacion).filter(Asignacion.miembro_id == miembro_id).all()
-    proyectos = [db.get(Proyecto, a.proyecto_id) for a in asigs]
-    return proyectos, None
+def obtener_asignaciones_eliminadas(db: Session):
+    return db.query(Asignacion).filter(Asignacion.eliminado == True).all()
+
+
+def generar_reporte_asignaciones(db: Session):
+    asignaciones = db.query(Asignacion).filter(Asignacion.eliminado == False).all()
+    contenido = "🧩 REPORTE DE ASIGNACIONES ACTIVAS\n\n"
+
+    for a in asignaciones:
+        miembro = db.query(Miembro).filter(Miembro.id == a.miembro_id).first()
+        proyecto = db.query(Proyecto).filter(Proyecto.id == a.proyecto_id).first()
+        contenido += (
+            f"Asignación ID: {a.id}\n"
+            f"Miembro: {miembro.nombre if miembro else 'Desconocido'}\n"
+            f"Proyecto: {proyecto.nombre if proyecto else 'Desconocido'}\n"
+            f"Fecha Asignación: {a.fecha_asignacion}\n\n"
+        )
+
+    ruta = "data/reporte_asignaciones.txt"
+    with open(ruta, "w", encoding="utf-8") as archivo:
+        archivo.write(contenido)
+    return ruta

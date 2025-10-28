@@ -1,113 +1,120 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Proyectos – Parcial_Man_Guito</title>
-    <link rel="stylesheet" href="./css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Proyectos - Man_Guito</title>
+  <link rel="stylesheet" href="./css/style.css" />
 </head>
 <body>
-
-<header>
+  <header>
     <h1> Gestión de Proyectos</h1>
-</header>
+    <p>Administra los proyectos activos de tu organización Man_Guito.</p>
+  </header>
 
-<main>
-    <section class="formulario">
-        <h2>Agregar Proyecto</h2>
-        <form id="formProyecto">
-            <input type="text" id="nombre" placeholder="Nombre del proyecto" required>
-            <input type="text" id="descripcion" placeholder="Descripción" required>
-            <input type="text" id="plataforma" placeholder="Plataforma (ej: Web, Móvil)" required>
-            <input type="number" id="presupuesto" placeholder="Presupuesto ($)" required>
-            <button type="submit"> Crear Proyecto</button>
-        </form>
+  <main>
+    <section>
+      <h2> Crear Proyecto</h2>
+      <form id="formProyecto">
+        <input type="text" id="nombre" placeholder="Nombre del proyecto" required />
+        <textarea id="descripcion" placeholder="Descripción breve del proyecto" required></textarea>
+        <input type="date" id="fecha_inicio" required />
+        <input type="date" id="fecha_fin" required />
+        <button type="submit">Crear Proyecto</button>
+      </form>
     </section>
 
-    <section class="lista">
-        <h2>Lista de Proyectos Activos</h2>
-        <div id="listaProyectos"></div>
+    <section>
+      <h2> Lista de Proyectos</h2>
+      <table id="tablaProyectos">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Inicio</th>
+            <th>Fin</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <button id="descargarReporte"> Descargar Reporte</button>
     </section>
+  </main>
 
-    <section class="reportes">
-        <h2> Reporte de Proyectos Eliminados</h2>
-        <button id="descargarReporte">⬇ Descargar Reporte</button>
-    </section>
-</main>
+  <footer>
+    <a href="index.html"> Volver al Inicio</a>
+  </footer>
 
-<footer>
-    <a href="./index.html">🏠 Volver al inicio</a>
-</footer>
+  <script>
+    const API_URL = "http://127.0.0.1:8000/proyectos";
 
-<script>
-const baseURL = "http://127.0.0.1:8000";
-const lista = document.getElementById("listaProyectos");
-const form = document.getElementById("formProyecto");
-const botonReporte = document.getElementById("descargarReporte");
+    async function cargarProyectos() {
+      const res = await fetch(API_URL);
+      const data = await res.json();
 
+      const tbody = document.querySelector("#tablaProyectos tbody");
+      tbody.innerHTML = "";
 
-form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const nuevo = {
+      data.forEach((proyecto) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${proyecto.id}</td>
+          <td>${proyecto.nombre}</td>
+          <td>${proyecto.descripcion}</td>
+          <td>${proyecto.fecha_inicio}</td>
+          <td>${proyecto.fecha_fin}</td>
+          <td>
+            <button onclick="confirmarEliminar(${proyecto.id})">🗑 Eliminar</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById("formProyecto").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const nuevoProyecto = {
         nombre: document.getElementById("nombre").value,
         descripcion: document.getElementById("descripcion").value,
-        plataforma: document.getElementById("plataforma").value,
-        presupuesto: parseFloat(document.getElementById("presupuesto").value)
-    };
+        fecha_inicio: document.getElementById("fecha_inicio").value,
+        fecha_fin: document.getElementById("fecha_fin").value,
+      };
 
-    const res = await fetch(`${baseURL}/proyectos/`, {
+      await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(nuevo)
+        body: JSON.stringify(nuevoProyecto),
+      });
+
+      e.target.reset();
+      cargarProyectos();
     });
 
-    if (res.ok) {
-        alert(" Proyecto creado correctamente");
-        form.reset();
+    async function confirmarEliminar(id) {
+      const confirmar = confirm(" ¿Seguro que deseas eliminar este proyecto?");
+      if (confirmar) {
+        await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+        alert("Proyecto eliminado correctamente");
         cargarProyectos();
-    } else {
-        alert(" Error al crear proyecto");
+      }
     }
-});
 
+    document.getElementById("descargarReporte").addEventListener("click", async () => {
+      const res = await fetch(`${API_URL}/reporte`);
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "reporte_proyectos.txt";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    });
 
-async function cargarProyectos() {
-    const res = await fetch(`${baseURL}/proyectos/`);
-    const data = await res.json();
-    lista.innerHTML = `
-        <table>
-            <tr><th>ID</th><th>Nombre</th><th>Descripción</th><th>Plataforma</th><th>Presupuesto</th><th>Acción</th></tr>
-            ${data.map(p => `
-                <tr>
-                    <td>${p.id}</td>
-                    <td>${p.nombre}</td>
-                    <td>${p.descripcion}</td>
-                    <td>${p.plataforma}</td>
-                    <td>$${p.presupuesto.toLocaleString()}</td>
-                    <td><button onclick="eliminarProyecto(${p.id})">🗑 Eliminar</button></td>
-                </tr>`).join("")}
-        </table>
-    `;
-}
-
-async function eliminarProyecto(id) {
-    const confirmar = confirm("¿Seguro que deseas eliminar este proyecto?");
-    if (confirmar) {
-        await fetch(`${baseURL}/proyectos/${id}`, { method: "DELETE" });
-        alert("🗑 Proyecto eliminado");
-        cargarProyectos();
-    }
-}
-
-botonReporte.addEventListener("click", () => {
-    const link = document.createElement("a");
-    link.href = `${baseURL}/proyectos/reporte/eliminados`;
-    link.download = "reporte_proyectos_eliminados.txt";
-    link.click();
-});
-
-cargarProyectos();
-</script>
-
+    cargarProyectos();
+  </script>
 </body>
 </html>

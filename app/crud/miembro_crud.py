@@ -1,12 +1,15 @@
 from sqlalchemy.orm import Session
-from app.models.miembro import Miembro, MiembroEliminado
+from app.models.miembro import Miembro
 from app.schemas.miembro import MiembroCreate, MiembroUpdate
+from fastapi import HTTPException
+from datetime import datetime
+
 
 def crear_miembro(db: Session, miembro: MiembroCreate):
     nuevo_miembro = Miembro(
         nombre=miembro.nombre,
-        rol=miembro.rol,
-        correo=miembro.correo
+        correo=miembro.correo,
+        rol=miembro.rol
     )
     db.add(nuevo_miembro)
     db.commit()
@@ -15,19 +18,15 @@ def crear_miembro(db: Session, miembro: MiembroCreate):
 
 
 def obtener_miembros(db: Session):
-    return db.query(Miembro).all()
+    return db.query(Miembro).filter(Miembro.eliminado == False).all()
 
 
-def obtener_miembro_por_id(db: Session, miembro_id: int):
-    return db.query(Miembro).filter(Miembro.id == miembro_id).first()
-
-
-def actualizar_miembro(db: Session, miembro_id: int, miembro_actualizado: MiembroUpdate):
-    miembro = db.query(Miembro).filter(Miembro.id == miembro_id).first()
+def actualizar_miembro(db: Session, miembro_id: int, datos: MiembroUpdate):
+    miembro = db.query(Miembro).filter(Miembro.id == miembro_id, Miembro.eliminado == False).first()
     if not miembro:
-        return None
-
-    for key, value in miembro_actualizado.dict(exclude_unset=True).items():
+        raise HTTPException(status_code=404, detail="Miembro no encontrado")
+    
+    for key, value in datos.dict(exclude_unset=True).items():
         setattr(miembro, key, value)
 
     db.commit()
@@ -35,40 +34,28 @@ def actualizar_miembro(db: Session, miembro_id: int, miembro_actualizado: Miembr
     return miembro
 
 
-def eliminar_miembro(db: Session, miembro_id: int, motivo: str = "Sin motivo especificado"):
-    miembro = db.query(Miembro).filter(Miembro.id == miembro_id).first()
+def eliminar_miembro(db: Session, miembro_id: int):
+    miembro = db.query(Miembro).filter(Miembro.id == miembro_id, Miembro.eliminado == False).first()
     if not miembro:
-        return None
+        raise HTTPException(status_code=404, detail="Miembro no encontrado")
 
-    eliminado = MiembroEliminado(
-        nombre=miembro.nombre,
-        rol=miembro.rol,
-        correo=miembro.correo,
-        motivo_eliminacion=motivo
-    )
-
-    db.add(eliminado)
-    db.delete(miembro)
+    miembro.eliminado = True
+    miembro.fecha_eliminacion = datetime.now()
     db.commit()
-    return eliminado
+    return {"mensaje": f"Miembro '{miembro.nombre}' eliminado correctamente."}
 
 
 def obtener_miembros_eliminados(db: Session):
-    return db.query(MiembroEliminado).all()
+    return db.query(Miembro).filter(Miembro.eliminado == True).all()
 
 
-def generar_reporte_eliminados(db: Session, ruta_archivo: str = "reporte_miembros_eliminados.txt"):
-    eliminados = db.query(MiembroEliminado).all()
-    if not eliminados:
-        return None
+def generar_reporte_miembros(db: Session):
+    miembros = db.query(Miembro).filter(Miembro.eliminado == False).all()
+    contenido = "📋 REPORTE DE MIEMBROS ACTIVOS\n\n"
+    for m in miembros:
+        contenido += f"ID: {m.id}\nNombre: {m.nombre}\nCorreo: {m.correo}\nRol: {m.rol}\n\n"
 
-    with open(ruta_archivo, "w", encoding="utf-8") as archivo:
-        archivo.write("=== REPORTE DE MIEMBROS ELIMINADOS ===\n\n")
-        for m in eliminados:
-            archivo.write(f"ID: {m.id}\n")
-            archivo.write(f"Nombre: {m.nombre}\n")
-            archivo.write(f"Rol: {m.rol}\n")
-            archivo.write(f"Correo: {m.correo}\n")
-            archivo.write(f"Motivo: {m.motivo_eliminacion}\n")
-            archivo.write("-" * 40 + "\n")
-    return ruta_archivo
+    ruta = "data/reporte_miembros.txt"
+    with open(ruta, "w", encoding="utf-8") as archivo:
+        archivo.write(contenido)
+    return ruta

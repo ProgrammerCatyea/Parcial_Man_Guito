@@ -3,32 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestor de Proyectos – Parcial_Man_Guito</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Man_Guito – Gestor de Proyectos</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        body {
+            background: linear-gradient(120deg, #1e1e2f, #27293d);
+            color: #fff;
+            font-family: "Segoe UI", sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        header {
+            padding: 2rem 1rem;
+            background-color: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #00d1b2;
+            text-shadow: 0 0 10px #00d1b2;
+        }
+
+        p {
+            color: #aaa;
+        }
+
+        main {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            margin: 3rem auto;
+            max-width: 900px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            width: 250px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .card h2 {
+            color: #00d1b2;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card p {
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        footer {
+            padding: 1rem;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+
+        .card a {
+            display: block;
+            text-decoration: none;
+            color: #00d1b2;
+            font-weight: bold;
+            margin-top: 1rem;
+        }
+
+        .card a:hover {
+            color: #fff;
+        }
+    </style>
 </head>
 <body>
 
-    <header>
-        <h1>MAN_GUITO</h1>
-        <p>Gestor de proyectos y miembros</p>
-    </header>
+<header>
+    <h1> Man_Guito</h1>
+    <p>Tu gestor de proyectos moderno y personalizado</p>
+</header>
 
-    <main>
-        <section class="menu">
-            <button id="btnProyectos"> Ver Proyectos</button>
-            <button id="btnMiembros">Ver Miembros</button>
-            <button id="btnReportes"> Ver Reportes</button>
-        </section>
+<main>
+    <div class="card" onclick="location.href='miembros.html'">
+        <h2> Miembros</h2>
+        <p>Administra tu equipo de trabajo y asigna roles específicos.</p>
+        <a href="miembros.html">Ir a Miembros</a>
+    </div>
 
-        <section id="contenido" class="contenido">
-            <p>Selecciona una opción para comenzar...</p>
-        </section>
-    </main>
+    <div class="card" onclick="location.href='proyectos.html'">
+        <h2> Proyectos</h2>
+        <p>Crea, edita y gestiona los proyectos activos de tu organización.</p>
+        <a href="proyectos.html">Ir a Proyectos</a>
+    </div>
 
-    <footer>
-        <p>Desarrollado por <strong>Nicolás Lozano</strong> </p>
-    </footer>
+    <div class="card" onclick="location.href='asignaciones.html'">
+        <h2> Asignaciones</h2>
+        <p>Relaciona miembros con proyectos según su rol y responsabilidad.</p>
+        <a href="asignaciones.html">Ir a Asignaciones</a>
+    </div>
+</main>
 
-    <script src="app.js"></script>
+<footer>
+    <p>Desarrollado por <strong>Nicolás Lozano</strong> con amor y FastAPI</p>
+</footer>
+
 </body>
 </html>
