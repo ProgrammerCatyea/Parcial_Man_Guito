@@ -1,50 +1,57 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from typing import List
-from ..core.database import get_db, Base, engine
-from ..schemas.asignacion import AsignacionCreate, AsignacionOut
-from ..schemas.miembro import MiembroOut
-from ..schemas.proyecto import ProyectoOut
-from ..crud import asignacion_crud
-from ..core.utils import not_found, conflict
+from app.core.database import get_db
+from app.crud.miembro_crud import (
+    crear_miembro,
+    listar_miembros,
+    obtener_miembro,
+    actualizar_miembro,
+    eliminar_miembro,
+)
+from app.schemas.miembro import MiembroCreate, MiembroUpdate, MiembroOut
 
-Base.metadata.create_all(bind=engine)
+router = APIRouter(prefix="/miembros", tags=["Miembros"])
 
-router = APIRouter(prefix="/api/asignaciones", tags=["Asignaciones"])
 
-@router.post("/", response_model=AsignacionOut, status_code=201, summary="Asignar miembro a proyecto")
-def asignar(payload: AsignacionCreate, db: Session = Depends(get_db)):
-    a, err = asignacion_crud.asignar(db, payload.model_dump())
-    if err == "miembro_invalido":
-        not_found("Miembro")
-    if err == "proyecto_invalido":
-        not_found("Proyecto")
-    if err == "duplicada":
-        conflict("El miembro ya está asignado a este proyecto")
-    return a
+@router.post("/", response_model=MiembroOut)
+def crear_nuevo_miembro(miembro: MiembroCreate, db: Session = Depends(get_db)):
+    return crear_miembro(db, miembro)
 
-@router.delete("/{asignacion_id}", status_code=204, summary="Desasignar miembro")
-def desasignar(asignacion_id: int, db: Session = Depends(get_db)):
-    err = asignacion_crud.desasignar(db, asignacion_id)
-    if err == "no_encontrado":
-        not_found("Asignación")
 
-@router.get("/proyecto/{proyecto_id}/miembros", response_model=List[MiembroOut], summary="Miembros de un proyecto")
-def miembros_de_proyecto(proyecto_id: int, db: Session = Depends(get_db)):
-    miembros, err = asignacion_crud.miembros_de_proyecto(db, proyecto_id)
-    if err == "proyecto_invalido":
-        not_found("Proyecto")
-    return miembros
+@router.get("/", response_model=list[MiembroOut])
+def listar_todos_miembros(
+    especialidad: str | None = None,
+    estado: str | None = None,
+    db: Session = Depends(get_db),
+):
+    return listar_miembros(db, especialidad, estado)
 
-@router.get("/miembro/{miembro_id}/proyectos", response_model=List[ProyectoOut], summary="Proyectos de un miembro")
-def proyectos_de_miembro(miembro_id: int, db: Session = Depends(get_db)):
-    proys, err = asignacion_crud.proyectos_de_miembro(db, miembro_id)
-    if err == "miembro_invalido":
-        not_found("Miembro")
-    outs: list[ProyectoOut] = []
-    for p in proys:
-        outs.append(ProyectoOut(
-            id=p.id, nombre=p.nombre, descripcion=p.descripcion, presupuesto=p.presupuesto,
-            estado=p.estado, gerente=p.gerente, miembros=[a.miembro for a in p.asignaciones]
-        ))
-    return outs
+
+@router.get("/{miembro_id}", response_model=MiembroOut)
+def obtener_un_miembro(miembro_id: int, db: Session = Depends(get_db)):
+    miembro = obtener_miembro(db, miembro_id)
+    if not miembro:
+        raise HTTPException(status_code=404, detail="Miembro no encontrado")
+    return miembro
+
+
+@router.put("/{miembro_id}", response_model=MiembroOut)
+def actualizar_un_miembro(miembro_id: int, miembro: MiembroUpdate, db: Session = Depends(get_db)):
+    return actualizar_miembro(db, miembro_id, miembro)
+
+
+@router.delete("/{miembro_id}")
+def eliminar_un_miembro(miembro_id: int, confirm: bool = False, db: Session = Depends(get_db)):
+    miembro = obtener_miembro(db, miembro_id)
+    if not miembro:
+        raise HTTPException(status_code=404, detail="Miembro no encontrado")
+
+    if hasattr(miembro, "proyectos_gerente") and miembro.proyectos_gerente:
+        raise HTTPException(status_code=400, detail="No se puede eliminar: este miembro es gerente de un proyecto activo")
+
+    if not confirm:
+        return {"mensaje": f"¿Deseas confirmar la eliminación del miembro '{miembro.nombre}'?", "confirmar_con": f"/miembros/{miembro_id}?confirm=true"}
+
+
+    eliminar_miembro(db, miembro_id)
+    return {"mensaje": f"Miembro '{miembro.nombre}' eliminado correctamente."}

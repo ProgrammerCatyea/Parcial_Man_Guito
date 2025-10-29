@@ -36,16 +36,30 @@ def actualizar_un_miembro(miembro_id: int, miembro: MiembroUpdate, db: Session =
     return actualizar_miembro(db, miembro_id, miembro)
 
 @router.delete("/{miembro_id}")
-def eliminar_un_miembro(miembro_id: int, confirm: bool = False, db: Session = Depends(get_db)):
+def eliminar_un_miembro(
+    miembro_id: int,
+    confirm: bool = False,
+    db: Session = Depends(get_db)
+):
     miembro = obtener_miembro(db, miembro_id)
     if not miembro:
-        raise HTTPException(status_code=404, detail="Miembro no encontrado")
+        raise HTTPException(
+            status_code=404,
+            detail="Miembro no encontrado."
+        )
 
-    if hasattr(miembro, "proyectos_gerente") and miembro.proyectos_gerente:
-        raise HTTPException(status_code=400, detail="No se puede eliminar: este miembro es gerente de un proyecto activo")
+    proyectos_gerente = db.query(Proyecto).filter(Proyecto.gerente_id == miembro_id).all()
+    if proyectos_gerente:
+        raise HTTPException(
+            status_code=400,
+            detail=f"No se puede eliminar al miembro '{miembro.nombre}' porque es gerente de uno o más proyectos activos."
+        )
 
     if not confirm:
-        return {"mensaje": f"¿Deseas confirmar la eliminación del miembro '{miembro.nombre}'?", "confirmar_con": f"/miembros/{miembro_id}?confirm=true"}
+        return {
+            "mensaje": f"¿Deseas confirmar la eliminación del miembro '{miembro.nombre}'?",
+            "confirmar_con": f"/miembros/{miembro_id}?confirm=true"
+        }
 
     eliminar_miembro(db, miembro_id)
     return {"mensaje": f"Miembro '{miembro.nombre}' eliminado correctamente."}

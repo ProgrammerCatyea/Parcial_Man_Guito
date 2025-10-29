@@ -47,7 +47,7 @@ def obtener_asignaciones_eliminadas(db: Session):
 
 def generar_reporte_asignaciones(db: Session):
     asignaciones = db.query(Asignacion).filter(Asignacion.eliminado == False).all()
-    contenido = "🧩 REPORTE DE ASIGNACIONES ACTIVAS\n\n"
+    contenido = " REPORTE DE ASIGNACIONES ACTIVAS\n\n"
 
     for a in asignaciones:
         miembro = db.query(Miembro).filter(Miembro.id == a.miembro_id).first()
