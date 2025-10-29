@@ -1,3 +1,6 @@
+"""Configuración general del sistema y variables de entorno."""
+
+
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):

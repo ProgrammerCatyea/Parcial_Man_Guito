@@ -1,3 +1,5 @@
+"""Rutas para asignar y desasignar miembros a proyectos."""
+
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from app.core.database import get_db

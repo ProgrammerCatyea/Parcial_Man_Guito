@@ -1,3 +1,6 @@
+"""Funciones auxiliares y herramientas de apoyo al sistema."""
+
+
 from fastapi import HTTPException, status
 
 def not_found(entity: str):
