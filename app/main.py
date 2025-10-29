@@ -23,7 +23,7 @@ app.add_middleware(
 app.include_router(proyectos_router.router)
 app.include_router(miembros_router.router)
 app.include_router(asignacion_router.router)
-
+app.include_router(reportes_router.router)
 
 @app.get("/")
 def inicio():
