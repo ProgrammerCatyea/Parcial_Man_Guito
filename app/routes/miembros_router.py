@@ -15,7 +15,8 @@ from app.crud.miembro_crud import (
     listar_miembros_eliminados
 )
 
-router = APIRouter(prefix="/miembros", tags=["Miembros"])
+router = APIRouter(tags=["Miembros"])
+
 
 
 
@@ -25,10 +26,6 @@ def listar_todos_los_miembros(
     especialidad: Optional[str] = Query(None, description="Filtrar por especialidad"),
     db: Session = Depends(get_db)
 ):
-    """
-    Devuelve todos los miembros registrados.
-    Permite filtrar por estado o especialidad.
-    """
     miembros = listar_miembros(db, estado=estado, especialidad=especialidad)
     if not miembros:
         raise HTTPException(status_code=404, detail="No se encontraron miembros con los filtros aplicados")
@@ -47,9 +44,7 @@ def crear_un_miembro(miembro: MiembroCreate, db: Session = Depends(get_db)):
 
 @router.put("/{miembro_id}", response_model=MiembroResponse)
 def actualizar_un_miembro(miembro_id: int, miembro: MiembroUpdate, db: Session = Depends(get_db)):
-    """
-    Actualiza los datos de un miembro existente por su ID.
-    """
+
     miembro_existente = obtener_miembro(db, miembro_id)
     if not miembro_existente:
         raise HTTPException(status_code=404, detail="Miembro no encontrado")
@@ -59,11 +54,7 @@ def actualizar_un_miembro(miembro_id: int, miembro: MiembroUpdate, db: Session =
 
 @router.delete("/{miembro_id}")
 def eliminar_un_miembro(miembro_id: int, confirm: bool = False, db: Session = Depends(get_db)):
-    """
-    Elimina un miembro de manera lógica.
-    Primero solicita confirmación antes de eliminar.
-    Impide eliminar miembros que sean gerentes activos.
-    """
+
     miembro = obtener_miembro(db, miembro_id)
     if not miembro:
         raise HTTPException(status_code=404, detail="Miembro no encontrado")
@@ -83,9 +74,7 @@ def eliminar_un_miembro(miembro_id: int, confirm: bool = False, db: Session = De
 
 @router.get("/eliminados", response_model=List[MiembroResponse])
 def listar_miembros_eliminados_endpoint(db: Session = Depends(get_db)):
-    """
-    Devuelve todos los miembros que han sido marcados como eliminados.
-    """
+
     eliminados = listar_miembros_eliminados(db)
     if not eliminados:
         raise HTTPException(status_code=404, detail="No hay miembros eliminados registrados")
