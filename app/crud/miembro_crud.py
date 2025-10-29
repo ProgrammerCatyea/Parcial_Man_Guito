@@ -13,11 +13,8 @@ def listar_miembros(db: Session, estado: str = None, especialidad: str = None):
 
 
 def obtener_miembro(db: Session, miembro_id: int):
-    """
-    Retorna un miembro específico según su ID.
-    """
+   
     return db.query(Miembro).filter(Miembro.id == miembro_id).first()
-
 
 
 def crear_miembro(db: Session, miembro):
@@ -27,7 +24,6 @@ def crear_miembro(db: Session, miembro):
     db.commit()
     db.refresh(nuevo_miembro)
     return nuevo_miembro
-
 
 
 def actualizar_miembro(db: Session, miembro_id: int, datos):

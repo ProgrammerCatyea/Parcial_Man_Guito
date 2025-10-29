@@ -1,67 +1,90 @@
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "http://127.0.0.1:8000/miembros/";
 
-async function eliminarElemento(tipo, id) {
-    const confirmar = confirm(`¿Estás seguro de que deseas eliminar este ${tipo}?`);
-    if (!confirmar) return;
+async function cargarMiembros() {
+  try {
+    const res = await fetch(API_URL);
+    if (!res.ok) throw new Error("Error al cargar miembros");
+    const miembros = await res.json();
 
-    try {
-        const response = await fetch(`${API_URL}/${tipo}/${id}?confirm=true`, {
-            method: 'DELETE'
-        });
+    const tabla = document.getElementById("tablaMiembros");
+    tabla.innerHTML = "";
 
-        const data = await response.json();
+    miembros.forEach((m) => {
+      tabla.innerHTML += `
+        <tr>
+          <td>${m.id}</td>
+          <td>${m.nombre}</td>
+          <td>${m.especialidad || "—"}</td>
+          <td>${m.estado}</td>
+          <td>
+            <button onclick="editarMiembro(${m.id}, '${m.nombre}', '${m.especialidad || ""}', '${m.estado}')">✏️ Editar</button>
+            <button onclick="eliminarMiembro(${m.id})">🗑️ Eliminar</button>
+          </td>
+        </tr>`;
+    });
+  } catch (error) {
+    console.error(error);
+    alert("No se pudo obtener la lista de miembros.");
+  }
+}
 
-        if (response.ok) {
-            alert(data.mensaje || `${tipo} eliminado correctamente.`);
-            location.reload();
-        } else {
-            alert(data.detail || data.mensaje || 'Error al eliminar.');
-        }
-    } catch (error) {
-        console.error(error);
-        alert('Error de conexión con el servidor.');
-    }
+document.getElementById("formMiembro").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const id = document.getElementById("miembroId").value;
+  const nombre = document.getElementById("nombre").value.trim();
+  const especialidad = document.getElementById("especialidad").value.trim();
+  const estado = document.getElementById("estado").value;
+
+  const miembro = { nombre, especialidad, estado };
+  const method = id ? "PUT" : "POST";
+  const url = id ? `${API_URL}${id}` : API_URL;
+
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(miembro),
+    });
+
+    if (!res.ok) throw new Error("Error al guardar miembro");
+
+    await cargarMiembros();
+    resetForm();
+  } catch (error) {
+    console.error(error);
+    alert("Error al guardar miembro");
+  }
+});
+
+function editarMiembro(id, nombre, especialidad, estado) {
+  document.getElementById("miembroId").value = id;
+  document.getElementById("nombre").value = nombre;
+  document.getElementById("especialidad").value = especialidad;
+  document.getElementById("estado").value = estado;
+}
+
+async function eliminarMiembro(id) {
+  if (!confirm("¿Deseas eliminar este miembro?")) return;
+
+  try {
+    const res = await fetch(`${API_URL}${id}?confirm=true`, { method: "DELETE" });
+    if (!res.ok) throw new Error("Error al eliminar miembro");
+    await cargarMiembros();
+  } catch (error) {
+    console.error(error);
+    alert("Error al eliminar miembro.");
+  }
 }
 
 
-async function cargarDatos(tipo, contenedorId) {
-    try {
-        const response = await fetch(`${API_URL}/${tipo}`);
-        const data = await response.json();
-        const contenedor = document.getElementById(contenedorId);
-        contenedor.innerHTML = "";
-
-        data.forEach(item => {
-            const fila = document.createElement("tr");
-            fila.innerHTML = `
-                <td>${item.id}</td>
-                <td>${item.nombre || item.titulo}</td>
-                <td>${item.estado || 'N/A'}</td>
-                <td>
-                    <button onclick="eliminarElemento('${tipo}', ${item.id})" class="btn btn-danger btn-sm">Eliminar</button>
-                </td>
-            `;
-            contenedor.appendChild(fila);
-        });
-    } catch (error) {
-        console.error(error);
-        alert("Error al cargar los datos desde el servidor.");
-    }
+function resetForm() {
+  document.getElementById("miembroId").value = "";
+  document.getElementById("nombre").value = "";
+  document.getElementById("especialidad").value = "";
+  document.getElementById("estado").value = "Activo";
 }
 
-function descargarReporte() {
-    fetch("http://127.0.0.1:8000/reportes/generar")
-        .then(response => {
-            if (!response.ok) throw new Error("Error al generar el reporte");
-            return response.blob();
-        })
-        .then(blob => {
-            const enlace = document.createElement("a");
-            enlace.href = URL.createObjectURL(blob);
-            enlace.download = "reporte_general.txt";
-            enlace.click();
-        })
-        .catch(error => alert("No se pudo generar el reporte: " + error.message));
-}
 
+window.onload = cargarMiembros;

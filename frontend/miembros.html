@@ -1,29 +1,94 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Miembros - Man_Guito</title>
-    <link rel="stylesheet" href="css/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Miembros | MAN_GUITO</title>
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #0a4d68;
+    }
+    form {
+      background: #fff;
+      padding: 20px;
+      margin-bottom: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    input, select, button {
+      margin: 5px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      background: #0a4d68;
+      color: #fff;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #107dac;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background: #0a4d68;
+      color: #fff;
+    }
+  </style>
 </head>
 <body>
-    <h1>Gestión de Miembros</h1>
-    <table class="tabla">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Especialidad</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody id="listaMiembros"></tbody>
-    </table>
 
-    <script src="js/app.js"></script>
-    <script>
-        cargarDatos("miembros", "listaMiembros");
-    </script>
+  <h1> Gestión de Miembros - MAN_GUITO</h1>
+
+  <form id="formMiembro">
+    <h3>Registrar / Actualizar Miembro</h3>
+    <input type="hidden" id="miembroId">
+    <input type="text" id="nombre" placeholder="Nombre completo" required>
+    <input type="text" id="especialidad" placeholder="Especialidad">
+    <select id="estado">
+      <option value="Activo">Activo</option>
+      <option value="Eliminado">Eliminado</option>
+    </select>
+    <button type="submit">Guardar</button>
+    <button type="button" onclick="resetForm()">Cancelar</button>
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Especialidad</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="tablaMiembros">
+     
+    </tbody>
+  </table>
+
+  <script src="app.js"></script>
 </body>
 </html>
 
