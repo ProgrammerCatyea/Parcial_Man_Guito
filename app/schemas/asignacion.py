@@ -1,15 +1,16 @@
 from pydantic import BaseModel
 from typing import Optional
 
-class AsignacionCreate(BaseModel):
-    miembro_id: int
+class AsignacionBase(BaseModel):
     proyecto_id: int
-    rol_en_proyecto: str = "miembro"
+    miembro_id: int
+    rol: Optional[str] = None
 
-class AsignacionOut(BaseModel):
+class AsignacionCreate(AsignacionBase):
+    pass
+
+class AsignacionResponse(AsignacionBase):
     id: int
-    miembro_id: int
-    proyecto_id: int
-    rol_en_proyecto: str
+
     class Config:
-        from_attributes = True
+        orm_mode = True

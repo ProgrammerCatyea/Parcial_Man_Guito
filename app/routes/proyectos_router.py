@@ -2,39 +2,49 @@
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from app.crud.proyecto_crud import listar_proyectos, obtener_proyecto, crear_proyecto, eliminar_proyecto, listar_eliminados
+from typing import List, Optional
 from app.core.database import get_db
+from app.schemas.proyecto import ProyectoCreate, ProyectoUpdate, ProyectoResponse
+from app.crud.proyecto_crud import (
+    listar_proyectos,
+    crear_proyecto,
+    obtener_proyecto,
+    actualizar_proyecto,
+    eliminar_proyecto,
+    listar_proyectos_eliminados
+)
 
 router = APIRouter(prefix="/proyectos", tags=["Proyectos"])
 
-@router.get("/", summary="Listar proyectos", description="Obtiene todos los proyectos con filtros opcionales por estado o presupuesto.")
-def obtener_proyectos(
-    estado: str = Query(None, description="Filtrar por estado (En progreso, Finalizado o Eliminado)"),
-    presupuesto_min: float = Query(None, description="Filtrar proyectos con presupuesto mayor o igual a este valor"),
-    presupuesto_max: float = Query(None, description="Filtrar proyectos con presupuesto menor o igual a este valor"),
+@router.get("/", response_model=List[ProyectoResponse])
+def listar_proyectos_endpoint(
+    estado: Optional[str] = Query(None, description="Filtrar por estado"),
+    presupuesto_min: Optional[float] = Query(None, description="Filtrar por presupuesto mínimo"),
     db: Session = Depends(get_db)
 ):
-    return listar_proyectos(db, estado, presupuesto_min, presupuesto_max)
+    proyectos = listar_proyectos(db, estado=estado, presupuesto_min=presupuesto_min)
+    if not proyectos:
+        raise HTTPException(status_code=404, detail="No se encontraron proyectos con los filtros aplicados")
+    return proyectos
 
+@router.post("/", response_model=ProyectoResponse)
+def crear_proyecto_endpoint(proyecto: ProyectoCreate, db: Session = Depends(get_db)):
+    return crear_proyecto(db, proyecto)
 
-@router.get("/eliminados", summary="Listar proyectos eliminados", description="Muestra los proyectos marcados como eliminados.")
-def obtener_proyectos_eliminados(db: Session = Depends(get_db)):
-    return listar_eliminados(db)
+@router.put("/{proyecto_id}", response_model=ProyectoResponse)
+def actualizar_proyecto_endpoint(proyecto_id: int, datos: ProyectoUpdate, db: Session = Depends(get_db)):
+    proyecto_existente = obtener_proyecto(db, proyecto_id)
+    if not proyecto_existente:
+        raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+    return actualizar_proyecto(db, proyecto_id, datos)
 
-
-@router.post("/", summary="Crear nuevo proyecto", description="Crea un nuevo proyecto con nombre, descripción y presupuesto.")
-def crear_nuevo_proyecto(nombre: str, descripcion: str, presupuesto: float, db: Session = Depends(get_db)):
-    return crear_proyecto(db, nombre, descripcion, presupuesto)
-
-
-@router.delete("/{proyecto_id}", summary="Eliminar proyecto", description="Marca un proyecto como eliminado. Requiere confirmación previa.")
-def eliminar_un_proyecto(proyecto_id: int, confirm: bool = False, db: Session = Depends(get_db)):
-    proyecto = obtener_proyecto(db, proyecto_id)
+@router.delete("/{proyecto_id}")
+def eliminar_proyecto_endpoint(proyecto_id: int, db: Session = Depends(get_db)):
+    proyecto = eliminar_proyecto(db, proyecto_id)
     if not proyecto:
         raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+    return {"mensaje": f"Proyecto '{proyecto.nombre}' marcado como eliminado"}
 
-    if not confirm:
-        return {"mensaje": f"¿Deseas confirmar la eliminación del proyecto '{proyecto.nombre}'?", "confirmar_con": f"/proyectos/{proyecto_id}?confirm=true"}
-
-    eliminar_proyecto(db, proyecto_id)
-    return {"mensaje": f"Proyecto '{proyecto.nombre}' marcado como eliminado correctamente."}
+@router.get("/eliminados", response_model=List[ProyectoResponse])
+def listar_eliminados_endpoint(db: Session = Depends(get_db)):
+    return listar_proyectos_eliminados(db)

@@ -3,32 +3,67 @@
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from app.crud.miembro_crud import listar_miembros, obtener_miembro, crear_miembro, eliminar_miembro, listar_eliminados
+from typing import List, Optional
 from app.core.database import get_db
+from app.schemas.miembro import MiembroCreate, MiembroUpdate, MiembroResponse
+from app.crud.miembro_crud import (
+    crear_miembro,
+    obtener_miembro,
+    listar_miembros,
+    actualizar_miembro,
+    eliminar_miembro,
+    listar_miembros_eliminados
+)
 
 router = APIRouter(prefix="/miembros", tags=["Miembros"])
 
-@router.get("/", summary="Listar miembros", description="Obtiene todos los miembros con filtros opcionales por estado o especialidad.")
-def obtener_miembros(
-    estado: str = Query(None, description="Filtrar por estado (Activo o Eliminado)"),
-    especialidad: str = Query(None, description="Filtrar por especialidad"),
+
+
+@router.get("/", response_model=List[MiembroResponse])
+def listar_todos_los_miembros(
+    estado: Optional[str] = Query(None, description="Filtrar por estado (Activo/Inactivo)"),
+    especialidad: Optional[str] = Query(None, description="Filtrar por especialidad"),
     db: Session = Depends(get_db)
 ):
-    return listar_miembros(db, estado, especialidad)
+    """
+    Devuelve todos los miembros registrados.
+    Permite filtrar por estado o especialidad.
+    """
+    miembros = listar_miembros(db, estado=estado, especialidad=especialidad)
+    if not miembros:
+        raise HTTPException(status_code=404, detail="No se encontraron miembros con los filtros aplicados")
+    return miembros
 
 
-@router.get("/eliminados", summary="Listar miembros eliminados", description="Muestra los miembros marcados como eliminados.")
-def obtener_miembros_eliminados(db: Session = Depends(get_db)):
-    return listar_eliminados(db)
+
+@router.post("/", response_model=MiembroResponse)
+def crear_un_miembro(miembro: MiembroCreate, db: Session = Depends(get_db)):
+    """
+    Crea un nuevo miembro en la base de datos.
+    """
+    return crear_miembro(db, miembro)
 
 
-@router.post("/", summary="Crear nuevo miembro", description="Crea un nuevo miembro con nombre, especialidad y salario.")
-def crear_nuevo_miembro(nombre: str, especialidad: str, salario: float, db: Session = Depends(get_db)):
-    return crear_miembro(db, nombre, especialidad, salario)
+
+@router.put("/{miembro_id}", response_model=MiembroResponse)
+def actualizar_un_miembro(miembro_id: int, miembro: MiembroUpdate, db: Session = Depends(get_db)):
+    """
+    Actualiza los datos de un miembro existente por su ID.
+    """
+    miembro_existente = obtener_miembro(db, miembro_id)
+    if not miembro_existente:
+        raise HTTPException(status_code=404, detail="Miembro no encontrado")
+    return actualizar_miembro(db, miembro_id, miembro)
 
 
-@router.delete("/{miembro_id}", summary="Eliminar miembro", description="Elimina un miembro solo si no es gerente de un proyecto activo. Requiere confirmación.")
+
+@router.delete("/{miembro_id}")
 def eliminar_un_miembro(miembro_id: int, confirm: bool = False, db: Session = Depends(get_db)):
+    """
+    Elimina un miembro de manera lógica.
+    Primero solicita confirmación antes de eliminar.
+    Impide eliminar miembros que sean gerentes activos.
+    """
     miembro = obtener_miembro(db, miembro_id)
     if not miembro:
         raise HTTPException(status_code=404, detail="Miembro no encontrado")
@@ -37,8 +72,21 @@ def eliminar_un_miembro(miembro_id: int, confirm: bool = False, db: Session = De
         raise HTTPException(status_code=400, detail="No se puede eliminar: este miembro es gerente de un proyecto activo")
 
     if not confirm:
-        return {"mensaje": f"¿Deseas confirmar la eliminación del miembro '{miembro.nombre}'?", "confirmar_con": f"/miembros/{miembro_id}?confirm=true"}
+        return {
+            "mensaje": f"¿Deseas confirmar la eliminación del miembro '{miembro.nombre}'?",
+            "confirmar_con": f"/miembros/{miembro_id}?confirm=true"
+        }
 
     eliminar_miembro(db, miembro_id)
-    return {"mensaje": f"Miembro '{miembro.nombre}' marcado como eliminado correctamente."}
+    return {"mensaje": f"Miembro '{miembro.nombre}' eliminado correctamente."}
 
+
+@router.get("/eliminados", response_model=List[MiembroResponse])
+def listar_miembros_eliminados_endpoint(db: Session = Depends(get_db)):
+    """
+    Devuelve todos los miembros que han sido marcados como eliminados.
+    """
+    eliminados = listar_miembros_eliminados(db)
+    if not eliminados:
+        raise HTTPException(status_code=404, detail="No hay miembros eliminados registrados")
+    return eliminados

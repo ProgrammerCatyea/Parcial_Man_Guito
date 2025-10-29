@@ -1,31 +1,48 @@
 import os
 from datetime import datetime
 
-def generar_reporte_eliminados(miembros, proyectos):
-    fecha = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    nombre_archivo = f"reporte_eliminados_{fecha}.txt"
-    ruta_carpeta = os.path.join(os.getcwd(), "reportes")
-    ruta_archivo = os.path.join(ruta_carpeta, nombre_archivo)
+RUTA_REPORTE = os.path.join(os.getcwd(), "reportes_generados")
+os.makedirs(RUTA_REPORTE, exist_ok=True)
 
-    os.makedirs(ruta_carpeta, exist_ok=True)
+def generar_reporte_txt(proyectos, proyectos_eliminados, miembros_eliminados):
+    """
+    Genera un reporte consolidado en formato TXT con información de:
+      - Proyectos activos y eliminados
+      - Miembros eliminados
+    El archivo se guarda en /reportes_generados y se devuelve su ruta.
+    """
 
-    with open(ruta_archivo, "w", encoding="utf-8") as f:
-        f.write("===== REPORTE DE ELEMENTOS ELIMINADOS =====\n\n")
+    fecha_actual = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    nombre_archivo = f"reporte_gestion_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+    ruta_archivo = os.path.join(RUTA_REPORTE, nombre_archivo)
 
-        f.write("---- MIEMBROS ELIMINADOS ----\n")
-        if miembros:
-            for m in miembros:
-                f.write(f"ID: {m.id} | Nombre: {m.nombre} | Especialidad: {m.especialidad}\n")
-        else:
-            f.write("No hay miembros eliminados.\n")
+    with open(ruta_archivo, "w", encoding="utf-8") as archivo:
+        archivo.write("=== REPORTE DE GESTIÓN - MAN_GUITO ===\n")
+        archivo.write(f"Fecha de generación: {fecha_actual}\n\n")
 
-        f.write("\n---- PROYECTOS ELIMINADOS ----\n")
+        archivo.write("=== PROYECTOS ACTIVOS ===\n")
         if proyectos:
             for p in proyectos:
-                f.write(f"ID: {p.id} | Nombre: {p.nombre} | Presupuesto: {p.presupuesto}\n")
+                archivo.write(f"- {p.nombre} | Estado: {p.estado} | Presupuesto: ${p.presupuesto}\n")
         else:
-            f.write("No hay proyectos eliminados.\n")
+            archivo.write("No hay proyectos activos registrados.\n")
+        archivo.write("\n")
 
-        f.write("\nGenerado el: " + fecha + "\n")
+        archivo.write("=== PROYECTOS ELIMINADOS ===\n")
+        if proyectos_eliminados:
+            for p in proyectos_eliminados:
+                archivo.write(f"- {p.nombre} (Eliminado)\n")
+        else:
+            archivo.write("No hay proyectos eliminados.\n")
+        archivo.write("\n")
+
+        archivo.write("=== MIEMBROS ELIMINADOS ===\n")
+        if miembros_eliminados:
+            for m in miembros_eliminados:
+                archivo.write(f"- {m.nombre} | Especialidad: {m.especialidad} | Estado: {m.estado}\n")
+        else:
+            archivo.write("No hay miembros eliminados.\n")
+
+        archivo.write("\n=== FIN DEL REPORTE ===\n")
 
     return ruta_archivo

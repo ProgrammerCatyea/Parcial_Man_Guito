@@ -4,8 +4,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.database import Base, engine
-from app.routes import proyectos_router, miembros_router, asignacion_router
-
+from app.routes import proyectos_router, miembros_router, asignacion_router, reportes_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -31,11 +30,11 @@ app.include_router(reportes_router.router)
 @app.get("/")
 def inicio():
     return {
-        "mensaje": "Bienvenido a MAN_GUITO tu gestor preferido",
+        "mensaje": "Bienvenido a MAN_GUITO, tu gestor preferido.",
         "descripcion": "Administra proyectos, miembros y asignaciones de manera profesional.",
         "documentacion": {
             "Swagger UI": "http://127.0.0.1:8000/docs",
             "ReDoc": "http://127.0.0.1:8000/redoc"
         },
-        "autor": "Desarrollado por Nicolás Lozano "
+        "autor": "Desarrollado por Nicolás Lozano"
     }
