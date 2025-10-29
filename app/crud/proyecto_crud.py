@@ -1,27 +1,50 @@
+"""
+Rutas para la gestión de proyectos.
+"""
+from app.models.proyecto import Proyecto
 from sqlalchemy.orm import Session
-from app.models.proyecto import Proyecto, EstadoProyecto
 
-def obtener_proyecto(db: Session, proyecto_id: int):
-    return db.query(Proyecto).filter(Proyecto.id == proyecto_id).first()
+def listar_proyectos(db: Session, estado: str = None, presupuesto_min: float = None, presupuesto_max: float = None):
+    query = db.query(Proyecto)
+    if estado:
+        query = query.filter(Proyecto.estado.ilike(f"%{estado}%"))
+    if presupuesto_min is not None:
+        query = query.filter(Proyecto.presupuesto >= presupuesto_min)
+    if presupuesto_max is not None:
+        query = query.filter(Proyecto.presupuesto <= presupuesto_max)
+    return query.all()
 
-def listar_proyectos(db: Session):
-    return db.query(Proyecto).filter(Proyecto.estado != EstadoProyecto.ELIMINADO).all()
 
-def crear_proyecto(db: Session, nombre: str, descripcion: str, presupuesto: float):
-    nuevo_proyecto = Proyecto(nombre=nombre, descripcion=descripcion, presupuesto=presupuesto)
+def crear_proyecto(db: Session, proyecto):
+    nuevo_proyecto = Proyecto(**proyecto.model_dump())
     db.add(nuevo_proyecto)
     db.commit()
     db.refresh(nuevo_proyecto)
     return nuevo_proyecto
 
-def eliminar_proyecto(db: Session, proyecto_id: int):
+
+def obtener_proyecto(db: Session, proyecto_id: int):
+    return db.query(Proyecto).filter(Proyecto.id == proyecto_id).first()
+
+
+def actualizar_proyecto(db: Session, proyecto_id: int, datos):
     proyecto = obtener_proyecto(db, proyecto_id)
-    if not proyecto:
-        return None
-    proyecto.estado = EstadoProyecto.ELIMINADO
-    db.commit()
-    db.refresh(proyecto)
+    if proyecto:
+        for key, value in datos.model_dump().items():
+            setattr(proyecto, key, value)
+        db.commit()
+        db.refresh(proyecto)
     return proyecto
 
-def listar_eliminados(db: Session):
-    return db.query(Proyecto).filter(Proyecto.estado == EstadoProyecto.ELIMINADO).all()
+
+def eliminar_proyecto(db: Session, proyecto_id: int):
+    proyecto = obtener_proyecto(db, proyecto_id)
+    if proyecto:
+        proyecto.estado = "Eliminado"
+        db.commit()
+        db.refresh(proyecto)
+    return proyecto
+
+
+def listar_proyectos_eliminados(db: Session):
+    return db.query(Proyecto).filter(Proyecto.estado == "Eliminado").all()
