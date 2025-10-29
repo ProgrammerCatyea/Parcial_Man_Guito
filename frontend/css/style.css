@@ -1,147 +1,48 @@
 body {
-    background: linear-gradient(120deg, #1e1e2f, #27293d);
-    color: #fff;
     font-family: "Segoe UI", sans-serif;
-    margin: 0;
-    padding: 0;
+    background-color: #f7f9fc;
+    color: #333;
     text-align: center;
-}
-
-header {
-    padding: 2rem 1rem;
-    background-color: rgba(0, 0, 0, 0.3);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    padding: 20px;
 }
 
 h1 {
-    font-size: 2.5rem;
-    color: #00d1b2;
-    text-shadow: 0 0 10px #00d1b2;
+    color: #2b4c7e;
 }
-
-p {
-    color: #aaa;
-}
-
-
-main {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 2rem;
-    margin: 3rem auto;
-    max-width: 900px;
-}
-
-.card {
-    background: rgba(255,255,255,0.05);
-    border-radius: 12px;
-    padding: 1.5rem;
-    width: 250px;
-    transition: transform 0.3s, box-shadow 0.3s;
-    cursor: pointer;
-}
-
-.card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-}
-
-.card h2 {
-    color: #00d1b2;
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-}
-
-.card p {
-    font-size: 0.9rem;
-    color: #ccc;
-}
-
-.card a {
-    display: block;
-    text-decoration: none;
-    color: #00d1b2;
-    font-weight: bold;
-    margin-top: 1rem;
-}
-
-.card a:hover {
-    color: #fff;
-}
-
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin: 1.5rem auto;
-    max-width: 500px;
-}
-
-input, select, textarea {
-    width: 90%;
-    padding: 0.5rem;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-}
-
-button {
-    background-color: #00d1b2;
-    border: none;
-    border-radius: 8px;
-    color: #fff;
-    padding: 0.6rem 1.5rem;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background 0.3s;
-}
-
-button:hover {
-    background-color: #02b39a;
-}
-
 
 table {
-    width: 90%;
-    margin: 2rem auto;
+    margin: 0 auto;
+    width: 80%;
     border-collapse: collapse;
+    background: white;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
     border-radius: 10px;
     overflow: hidden;
 }
 
-table th, table td {
-    padding: 0.75rem;
-    text-align: center;
-    background: rgba(255, 255, 255, 0.08);
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #ccc;
 }
 
-table th {
-    background-color: #00d1b2;
-    color: #000;
+th {
+    background-color: #2b4c7e;
+    color: white;
 }
 
-table tr:nth-child(even) {
-    background-color: rgba(255,255,255,0.05);
+button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
 }
 
-
-.alerta {
-    background: rgba(255, 0, 0, 0.2);
-    border-left: 5px solid #ff4d4d;
-    color: #fff;
-    padding: 1rem;
-    margin: 1rem auto;
-    border-radius: 8px;
-    max-width: 500px;
+button:hover {
+    background-color: #b02a37;
 }
 
-footer {
-    padding: 1rem;
-    font-size: 0.9rem;
-    color: #aaa;
+.btn {
+    font-size: 14px;
 }

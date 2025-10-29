@@ -1,44 +1,52 @@
-const API = (p) => (p.startsWith('/') ? p : '/' + p);
 
-async function api(path, opts={}) {
-  const r = await fetch(API(path), { headers: { 'Content-Type': 'application/json' }, ...opts });
-  if (!r.ok) { const e = await r.json().catch(()=>({detail:r.statusText})); throw new Error(e.detail || 'Error'); }
-  return r.json().catch(()=> ({}));
+const API_URL = "http://127.0.0.1:8000";
+
+async function eliminarElemento(tipo, id) {
+    const confirmar = confirm(`¿Estás seguro de que deseas eliminar este ${tipo}?`);
+    if (!confirmar) return;
+
+    try {
+        const response = await fetch(`${API_URL}/${tipo}/${id}?confirm=true`, {
+            method: 'DELETE'
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert(data.mensaje || `${tipo} eliminado correctamente.`);
+            location.reload();
+        } else {
+            alert(data.detail || data.mensaje || 'Error al eliminar.');
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Error de conexión con el servidor.');
+    }
 }
 
 
-async function crearMiembro(d){ return api('/api/miembros/', {method:'POST', body:JSON.stringify(d)}); }
-async function listarMiembros(q={}){ const p=new URLSearchParams(q).toString(); return api('/api/miembros/' + (p?`?${p}`:'')); }
-async function eliminarMiembro(id){ const r=await fetch(`/api/miembros/${id}`,{method:'DELETE'}); if(!r.ok){const j=await r.json(); throw new Error(j.detail);} }
+async function cargarDatos(tipo, contenedorId) {
+    try {
+        const response = await fetch(`${API_URL}/${tipo}`);
+        const data = await response.json();
+        const contenedor = document.getElementById(contenedorId);
+        contenedor.innerHTML = "";
 
-
-async function crearProyecto(d){ return api('/api/proyectos/', {method:'POST', body:JSON.stringify(d)}); }
-async function listarProyectos(q={}){ const p=new URLSearchParams(q).toString(); return api('/api/proyectos/' + (p?`?${p}`:'')); }
-async function eliminarProyecto(id){ const r=await fetch(`/api/proyectos/${id}`,{method:'DELETE'}); if(!r.ok){const j=await r.json(); throw new Error(j.detail);} }
-
-
-async function asignar(d){ return api('/api/asignaciones/', {method:'POST', body:JSON.stringify(d)}); }
-async function desasignar(id){ const r=await fetch(`/api/asignaciones/${id}`,{method:'DELETE'}); if(!r.ok){const j=await r.json(); throw new Error(j.detail);} }
-
-
-function el(q){ return document.querySelector(q); }
-function mount(id, arr, render){ const c=el(id); c.innerHTML = arr.map(render).join(''); }
-
-
-async function dashboardResumen(){
-  try{
-    const [proys, miembros] = await Promise.all([listarProyectos(), listarMiembros()]);
-    const activos = proys.filter(p=>p.estado==='en_progreso').length;
-    const finalizados = proys.filter(p=>p.estado==='finalizado').length;
-    const presupuesto = proys.reduce((s,p)=>s+(p.presupuesto||0),0);
-    el('#kpi-proy').textContent = proys.length;
-    el('#kpi-act').textContent = activos;
-    el('#kpi-fin').textContent = finalizados;
-    el('#kpi-pres').textContent = `$${presupuesto.toFixed(2)}`;
-    el('#kpi-miem').textContent = miembros.length;
-  }catch(e){
-    console.error(e);
-  }
+        data.forEach(item => {
+            const fila = document.createElement("tr");
+            fila.innerHTML = `
+                <td>${item.id}</td>
+                <td>${item.nombre || item.titulo}</td>
+                <td>${item.estado || 'N/A'}</td>
+                <td>
+                    <button onclick="eliminarElemento('${tipo}', ${item.id})" class="btn btn-danger btn-sm">Eliminar</button>
+                </td>
+            `;
+            contenedor.appendChild(fila);
+        });
+    } catch (error) {
+        console.error(error);
+        alert("Error al cargar los datos desde el servidor.");
+    }
 }
 
-window.PMG = { crearMiembro, listarMiembros, eliminarMiembro, crearProyecto, listarProyectos, eliminarProyecto, asignar, desasignar, el, mount, dashboardResumen };
