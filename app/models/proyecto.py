@@ -1,22 +1,18 @@
-from sqlalchemy import Column, Integer, String, Float, Enum, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Date
 from sqlalchemy.orm import relationship
 from app.core.database import Base
-import enum
-
-class EstadoProyecto(enum.Enum):
-    EN_PROGRESO = "En progreso"
-    FINALIZADO = "Finalizado"
-    ELIMINADO = "Eliminado"
 
 class Proyecto(Base):
     __tablename__ = "proyectos"
 
     id = Column(Integer, primary_key=True, index=True)
-    nombre = Column(String, unique=True, nullable=False)
-    descripcion = Column(String)
+    nombre = Column(String, nullable=False)
+    descripcion = Column(String, nullable=True)
+    estado = Column(String, default="Activo")
     presupuesto = Column(Float, nullable=False)
-    estado = Column(Enum(EstadoProyecto), default=EstadoProyecto.EN_PROGRESO)
+    fecha_inicio = Column(Date, nullable=True)
+    fecha_fin = Column(Date, nullable=True)
+    id_gerente = Column(Integer, ForeignKey("miembros.id"), nullable=True)
 
-    gerente_id = Column(Integer, ForeignKey("miembros.id"))
-    gerente = relationship("Miembro", backref="proyectos_gerente")
-
+    gerente = relationship("Miembro", back_populates="proyectos_gerente")
+    asignaciones = relationship("Asignacion", back_populates="proyecto", cascade="all, delete-orphan")

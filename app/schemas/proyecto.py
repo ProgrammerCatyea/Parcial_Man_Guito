@@ -1,12 +1,16 @@
 from pydantic import BaseModel
 from typing import Optional
-from app.models.proyecto import EstadoProyecto
+from datetime import date
 
 
 class ProyectoBase(BaseModel):
     nombre: str
     descripcion: Optional[str] = None
-    estado: Optional[EstadoProyecto] = EstadoProyecto.EN_PROGRESO
+    estado: Optional[str] = "Activo"
+    presupuesto: float
+    fecha_inicio: Optional[date] = None
+    fecha_fin: Optional[date] = None
+    id_gerente: Optional[int] = None
 
 class ProyectoCreate(ProyectoBase):
     pass
@@ -15,19 +19,14 @@ class ProyectoCreate(ProyectoBase):
 class ProyectoUpdate(BaseModel):
     nombre: Optional[str] = None
     descripcion: Optional[str] = None
-    estado: Optional[EstadoProyecto] = None
-
+    estado: Optional[str] = None
+    presupuesto: Optional[float] = None
+    fecha_inicio: Optional[date] = None
+    fecha_fin: Optional[date] = None
+    id_gerente: Optional[int] = None
 
 class ProyectoResponse(ProyectoBase):
     id: int
 
     class Config:
-        from_attributes = True  
-
-class ProyectoOut(BaseModel):
-    id: int
-    nombre: str
-    estado: EstadoProyecto
-
-    class Config:
-        from_attributes = True
+        orm_mode = True

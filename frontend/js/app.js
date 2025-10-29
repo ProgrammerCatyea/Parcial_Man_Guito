@@ -50,3 +50,18 @@ async function cargarDatos(tipo, contenedorId) {
     }
 }
 
+function descargarReporte() {
+    fetch("http://127.0.0.1:8000/reportes/generar")
+        .then(response => {
+            if (!response.ok) throw new Error("Error al generar el reporte");
+            return response.blob();
+        })
+        .then(blob => {
+            const enlace = document.createElement("a");
+            enlace.href = URL.createObjectURL(blob);
+            enlace.download = "reporte_general.txt";
+            enlace.click();
+        })
+        .catch(error => alert("No se pudo generar el reporte: " + error.message));
+}
+
