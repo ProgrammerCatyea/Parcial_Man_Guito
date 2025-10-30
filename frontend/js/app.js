@@ -1,90 +1,56 @@
+const API_PROYECTOS = "http://127.0.0.1:8000/proyectos/";
 
-const API_URL = "http://127.0.0.1:8000/miembros/";
-
-async function cargarMiembros() {
+async function descargarReporteProyectosActivos() {
   try {
-    const res = await fetch(API_URL);
-    if (!res.ok) throw new Error("Error al cargar miembros");
-    const miembros = await res.json();
-
-    const tabla = document.getElementById("tablaMiembros");
-    tabla.innerHTML = "";
-
-    miembros.forEach((m) => {
-      tabla.innerHTML += `
-        <tr>
-          <td>${m.id}</td>
-          <td>${m.nombre}</td>
-          <td>${m.especialidad || "—"}</td>
-          <td>${m.estado}</td>
-          <td>
-            <button onclick="editarMiembro(${m.id}, '${m.nombre}', '${m.especialidad || ""}', '${m.estado}')">✏️ Editar</button>
-            <button onclick="eliminarMiembro(${m.id})">🗑️ Eliminar</button>
-          </td>
-        </tr>`;
-    });
-  } catch (error) {
-    console.error(error);
-    alert("No se pudo obtener la lista de miembros.");
+    const res = await fetch(`${API_PROYECTOS}reporte`);
+    if (!res.ok) throw new Error("No se pudo generar el reporte");
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "reporte_proyectos_activos.txt";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  } catch (e) {
+    console.error(e);
+    alert("Error generando el reporte de proyectos activos.");
   }
 }
 
-document.getElementById("formMiembro").addEventListener("submit", async (e) => {
+
+const btnRep = document.getElementById("btnReporteProyectos");
+if (btnRep) btnRep.addEventListener("click", descargarReporteProyectosActivos);
+
+
+async function guardarProyectoDesdeFormulario(e) {
   e.preventDefault();
+  const id = document.getElementById("proyectoId").value;
+  const payload = {
+    nombre: document.getElementById("p_nombre").value.trim(),
+    descripcion: document.getElementById("p_descripcion").value.trim(),
+    estado: document.getElementById("p_estado").value,           
+    presupuesto: parseFloat(document.getElementById("p_presupuesto").value),
+    fecha_inicio: document.getElementById("p_fecha_inicio").value || null, 
+    fecha_fin: document.getElementById("p_fecha_fin").value || null,
+    id_gerente: document.getElementById("p_id_gerente").value ? parseInt(document.getElementById("p_id_gerente").value) : null,
+  };
 
-  const id = document.getElementById("miembroId").value;
-  const nombre = document.getElementById("nombre").value.trim();
-  const especialidad = document.getElementById("especialidad").value.trim();
-  const estado = document.getElementById("estado").value;
-
-  const miembro = { nombre, especialidad, estado };
   const method = id ? "PUT" : "POST";
-  const url = id ? `${API_URL}${id}` : API_URL;
+  const url = id ? `${API_PROYECTOS}${id}` : API_PROYECTOS;
 
-  try {
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(miembro),
-    });
+  const res = await fetch(url, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 
-    if (!res.ok) throw new Error("Error al guardar miembro");
-
-    await cargarMiembros();
-    resetForm();
-  } catch (error) {
-    console.error(error);
-    alert("Error al guardar miembro");
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    console.error(err);
+    return alert("Error guardando el proyecto");
   }
-});
 
-function editarMiembro(id, nombre, especialidad, estado) {
-  document.getElementById("miembroId").value = id;
-  document.getElementById("nombre").value = nombre;
-  document.getElementById("especialidad").value = especialidad;
-  document.getElementById("estado").value = estado;
+ 
 }
-
-async function eliminarMiembro(id) {
-  if (!confirm("¿Deseas eliminar este miembro?")) return;
-
-  try {
-    const res = await fetch(`${API_URL}${id}?confirm=true`, { method: "DELETE" });
-    if (!res.ok) throw new Error("Error al eliminar miembro");
-    await cargarMiembros();
-  } catch (error) {
-    console.error(error);
-    alert("Error al eliminar miembro.");
-  }
-}
-
-
-function resetForm() {
-  document.getElementById("miembroId").value = "";
-  document.getElementById("nombre").value = "";
-  document.getElementById("especialidad").value = "";
-  document.getElementById("estado").value = "Activo";
-}
-
-
-window.onload = cargarMiembros;
