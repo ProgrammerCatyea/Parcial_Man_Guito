@@ -1,0 +1,16 @@
+=== REPORTE DE GESTIÓN - MAN_GUITO ===
+Fecha de generación: 2025-10-29 23:05:15
+
+=== PROYECTOS ACTIVOS ===
+- Plataforma Man_Guito | Estado: Activo | Presupuesto: $1500000.0
+- Sistema de Inventario | Estado: Activo | Presupuesto: $2000000.0
+- Aplicación de Riego Inteligente | Estado: Activo | Presupuesto: $3500000.0
+- Plataforma de Videojuegos | Estado: Activo | Presupuesto: $5000000.0
+
+=== PROYECTOS ELIMINADOS ===
+No hay proyectos eliminados.
+
+=== MIEMBROS ELIMINADOS ===
+No hay miembros eliminados.
+
+=== FIN DEL REPORTE ===
