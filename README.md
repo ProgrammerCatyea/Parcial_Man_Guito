@@ -36,7 +36,7 @@ El sistema permite registrar empleados, crear proyectos, asignar roles, generar 
 
 ### 1. Clonar el repositorio
 ```
-git clone https://github.com/NicolasLozano/Man_Guito.git
+git clone https://github.com/ProgrammerCatyea/Parcial_Man_Guito.git
 cd Man_Guito
 ```
 
@@ -182,6 +182,7 @@ Parcial_Man_Guito/
 **Nicolás Lozano Díaz**  
 Proyecto académico desarrollado para la materia **Desarrollo de Software**.  
 Repositorio GitHub: [https://github.com/ProgrammerCatyea/Parcial_Man_Guito.git](https://github.com/ProgrammerCatyea/Parcial_Man_Guito.git)
+
 
 
 
