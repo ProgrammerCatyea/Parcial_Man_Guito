@@ -21,33 +21,23 @@ def listar_asignaciones(
 
 
 def crear_asignacion(db: Session, asignacion):
-    
-    duplicado = (
-        db.query(Asignacion)
-        .filter(
-            Asignacion.id_proyecto == asignacion.id_proyecto,
-            Asignacion.id_miembro == asignacion.id_miembro
+    existe = db.query(Asignacion).filter(
+        Asignacion.id_miembro == asignacion.id_miembro,
+        Asignacion.id_proyecto == asignacion.id_proyecto
+    ).first()
+
+    if existe:
+        raise HTTPException(
+            status_code=400,
+            detail="El miembro ya está asignado a este proyecto."
         )
-        .first()
-    )
-    if duplicado:
-        return None 
 
-    nueva_asignacion = Asignacion(
-        id_proyecto=asignacion.id_proyecto,
-        id_miembro=asignacion.id_miembro,
-        rol=asignacion.rol,
-        fecha_asignacion=asignacion.fecha_asignacion or date.today(),
-    )
+    nueva_asignacion = Asignacion(**asignacion.model_dump())
+    db.add(nueva_asignacion)
+    db.commit()
+    db.refresh(nueva_asignacion)
+    return nueva_asignacion
 
-    try:
-        db.add(nueva_asignacion)
-        db.commit()
-        db.refresh(nueva_asignacion)
-        return nueva_asignacion
-    except IntegrityError:
-        db.rollback()
-        return None
 
 
 def obtener_asignacion(db: Session, asignacion_id: int):

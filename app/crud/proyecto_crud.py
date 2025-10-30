@@ -36,11 +36,23 @@ def actualizar_proyecto(db: Session, proyecto_id: int, datos):
 
 def eliminar_proyecto(db: Session, proyecto_id: int):
     proyecto = obtener_proyecto(db, proyecto_id)
-    if proyecto:
-        proyecto.estado = "Eliminado"
-        db.commit()
-        db.refresh(proyecto)
+    if not proyecto:
+        return None
+    asignaciones_activas = db.query(Asignacion).filter(
+        Asignacion.id_proyecto == proyecto_id
+    ).count()
+
+    if asignaciones_activas > 0:
+        raise HTTPException(
+            status_code=400,
+            detail=f"No se puede eliminar el proyecto '{proyecto.nombre}' porque tiene empleados asignados."
+        )
+
+    proyecto.estado = "Eliminado"
+    db.commit()
+    db.refresh(proyecto)
     return proyecto
+
 
 def listar_proyectos_eliminados(db: Session):
 

@@ -40,12 +40,27 @@ def actualizar_miembro(db: Session, miembro_id: int, datos):
 
 def eliminar_miembro(db: Session, miembro_id: int):
   
-    miembro = obtener_miembro(db, miembro_id)
-    if miembro:
-        miembro.estado = "Eliminado"
-        db.commit()
-        db.refresh(miembro)
+    miembro = db.query(Miembro).filter(Miembro.id == miembro_id).first()
+
+    if not miembro:
+        return None
+
+    proyectos_activos = db.query(Proyecto).filter(
+        Proyecto.id_gerente == miembro_id,
+        Proyecto.estado == "Activo"
+    ).count()
+
+    if proyectos_activos > 0:
+        raise HTTPException(
+            status_code=400,
+            detail=f"No se puede eliminar: el miembro '{miembro.nombre}' es gerente de un proyecto activo."
+        )
+
+    miembro.estado = "Eliminado"
+    db.commit()
+    db.refresh(miembro)
     return miembro
+
 
 
 
