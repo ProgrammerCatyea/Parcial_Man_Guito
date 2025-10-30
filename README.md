@@ -40,29 +40,27 @@ Permite registrar miembros, crear proyectos, asignar empleados, generar reportes
 ---
 
 ## Instalación y ejecución
-
+---
 ### 1. Clonar el repositorio
-
-```bash
 git clone https://github.com/tu-usuario/Man_Guito.git
 cd Man_Guito
+---
 2. Crear y activar entorno virtual
-bash
-Copiar código
 python -m venv venv
 # Linux/MacOS
 source venv/bin/activate
 # Windows
 venv\Scripts\activate
+---
 3. Instalar dependencias
-bash
-Copiar código
 pip install -r requirements.txt
-4. Ejecutar el servidor
+
+---
+5. Ejecutar el servidor
 bash
 Copiar código
 uvicorn app.main:app --reload
-5. Acceder a la documentación interactiva
+6. Acceder a la documentación interactiva
 Swagger UI → http://127.0.0.1:8000/docs
 
 Redoc → http://127.0.0.1:8000/redoc
@@ -162,4 +160,5 @@ Autor
 Nicolás Lozano Díaz
 Proyecto desarrollado para el curso de Desarrollo de Software.
 Repositorio GitHub: https://github.com/NicolasLozano/Man_Guito
+
 
