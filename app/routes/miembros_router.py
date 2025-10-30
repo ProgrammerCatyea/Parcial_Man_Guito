@@ -15,7 +15,8 @@ from app.crud.miembro_crud import (
     listar_miembros_eliminados
 )
 
-router = APIRouter(tags=["Miembros"])
+router = APIRouter(prefix="/miembros", tags=["Miembros"])
+
 
 
 

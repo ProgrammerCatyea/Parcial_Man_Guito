@@ -6,8 +6,8 @@ class Asignacion(Base):
     __tablename__ = "asignaciones"
 
     id = Column(Integer, primary_key=True, index=True)
-    id_proyecto = Column(Integer, ForeignKey("proyectos.id"))
-    id_miembro = Column(Integer, ForeignKey("miembros.id"))
+    id_proyecto = Column(Integer, ForeignKey("proyectos.id", ondelete="CASCADE"), nullable=False)
+    id_miembro = Column(Integer, ForeignKey("miembros.id", ondelete="CASCADE"), nullable=False)
     rol = Column(String, nullable=False)
     fecha_asignacion = Column(Date, nullable=True)
 
