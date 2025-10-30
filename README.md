@@ -1,4 +1,4 @@
-# Sistema de Gestión de Proyectos – Man_Guito
+ Sistema de Gestión de Proyectos – Man_Guito
 
 API REST desarrollada con **FastAPI** y **SQLAlchemy** para la gestión completa de proyectos, empleados y asignaciones.  
 Permite registrar miembros, crear proyectos, asignar empleados, generar reportes y mantener la trazabilidad de todos los procesos de una empresa.
@@ -40,34 +40,39 @@ Permite registrar miembros, crear proyectos, asignar empleados, generar reportes
 ---
 
 ## Instalación y ejecución
----
+
 ### 1. Clonar el repositorio
+
 git clone https://github.com/tu-usuario/Man_Guito.git
 cd Man_Guito
----
-2. Crear y activar entorno virtual
-python -m venv venv
-# Linux/MacOS
-source venv/bin/activate
-# Windows
-venv\Scripts\activate
----
-3. Instalar dependencias
-pip install -r requirements.txt
 
+------
+
+### 2. Crear y activar entorno virtual
+   python -m venv venv
+   # Linux/MacOS
+   source venv/bin/activate
+   # Windows
+   venv\Scripts\activate
 ---
-5. Ejecutar el servidor
-bash
-Copiar código
+
+### 3. Instalar dependencias
+pip install -r requirements.txt
+---
+
+### 4. Ejecutar el servidor
 uvicorn app.main:app --reload
-6. Acceder a la documentación interactiva
+---
+
+### 5. Acceder a la documentación interactiva
+
 Swagger UI → http://127.0.0.1:8000/docs
 
 Redoc → http://127.0.0.1:8000/redoc
 
-Estructura del proyecto
-bash
-Copiar código
+---
+
+### Estructura del proyecto
 Man_Guito/
 │
 ├── app/
@@ -85,45 +90,49 @@ Man_Guito/
 ├── requirements.txt            # Dependencias del proyecto
 ├── parcial_manguito.db         # Base de datos SQLite
 └── README.md                   # Documentación del proyecto
-Mapa de Endpoints
-Miembros
-Método	Endpoint	Descripción
-GET	/miembros/	Lista todos los miembros con filtros por estado o especialidad
-POST	/miembros/	Crea un nuevo miembro
-PUT	/miembros/{miembro_id}	Actualiza los datos de un miembro existente
-DELETE	/miembros/{miembro_id}	Elimina un miembro (lógica)
-GET	/miembros/eliminados	Lista los miembros eliminados
 
-Proyectos
-Método	Endpoint	Descripción
-GET	/proyectos/	Lista todos los proyectos con filtros por estado o presupuesto
-POST	/proyectos/	Crea un nuevo proyecto
-PUT	/proyectos/{proyecto_id}	Actualiza un proyecto existente
-DELETE	/proyectos/{proyecto_id}	Marca un proyecto como eliminado
-GET	/proyectos/eliminados	Lista los proyectos eliminados
+### Mapa de Endpoints
+## Miembros
 
-Asignaciones
-Método	Endpoint	Descripción
-GET	/asignaciones/	Lista todas las asignaciones
-POST	/asignaciones/	Crea una nueva asignación entre miembro y proyecto
-PUT	/asignaciones/{asignacion_id}	Actualiza una asignación existente
-DELETE	/asignaciones/{asignacion_id}	Elimina una asignación
-GET	/asignaciones/reporte	Genera un reporte .txt con todas las asignaciones activas
+| Método | Endpoint                 | Descripción                                                    |
+| ------ | ------------------------ | -------------------------------------------------------------- |
+| GET    | `/miembros/`             | Lista todos los miembros con filtros por estado o especialidad |
+| POST   | `/miembros/`             | Crea un nuevo miembro                                          |
+| PUT    | `/miembros/{miembro_id}` | Actualiza los datos de un miembro existente                    |
+| DELETE | `/miembros/{miembro_id}` | Elimina un miembro (lógica)                                    |
+| GET    | `/miembros/eliminados`   | Lista los miembros eliminados                                  |
 
-Ejemplos de cuerpos JSON
-Crear Miembro (POST /miembros)
+## Proyectos
+| Método | Endpoint                   | Descripción                                                    |
+| ------ | -------------------------- | -------------------------------------------------------------- |
+| GET    | `/proyectos/`              | Lista todos los proyectos con filtros por estado o presupuesto |
+| POST   | `/proyectos/`              | Crea un nuevo proyecto                                         |
+| PUT    | `/proyectos/{proyecto_id}` | Actualiza un proyecto existente                                |
+| DELETE | `/proyectos/{proyecto_id}` | Marca un proyecto como eliminado                               |
+| GET    | `/proyectos/eliminados`    | Lista los proyectos eliminados                                 |
 
-json
-Copiar código
+## Asignaciones
+| Método | Endpoint                        | Descripción                                                 |
+| ------ | ------------------------------- | ----------------------------------------------------------- |
+| GET    | `/asignaciones/`                | Lista todas las asignaciones                                |
+| POST   | `/asignaciones/`                | Crea una nueva asignación entre miembro y proyecto          |
+| PUT    | `/asignaciones/{asignacion_id}` | Actualiza una asignación existente                          |
+| DELETE | `/asignaciones/{asignacion_id}` | Elimina una asignación                                      |
+| GET    | `/asignaciones/reporte`         | Genera un reporte `.txt` con todas las asignaciones activas |
+
+## Ejemplos de cuerpos JSON
+
+### Crear Miembro (POST /miembros)
+
 {
   "nombre": "Laura Tovar",
   "especialidad": "Backend",
   "estado": "Activo"
 }
-Crear Proyecto (POST /proyectos)
 
-json
-Copiar código
+
+### Crear Proyecto (POST /proyectos)
+
 {
   "nombre": "Sistema de Inventario",
   "descripcion": "Proyecto para controlar existencias de productos",
@@ -133,17 +142,19 @@ Copiar código
   "fecha_fin": "2026-02-28",
   "id_gerente": 1
 }
-Crear Asignación (POST /asignaciones)
 
-json
-Copiar código
+----
+## Crear Asignación (POST /asignaciones)
+
 {
   "id_proyecto": 1,
   "id_miembro": 2,
   "rol": "Desarrollador Backend",
   "fecha_asignacion": "2025-10-30"
 }
-Estado actual
+---
+### Estado actual
+
 CRUD completo para miembros, proyectos y asignaciones.
 
 Reglas de negocio implementadas.
@@ -156,9 +167,13 @@ Documentación automática accesible desde /docs.
 
 Frontend funcional enlazado con los endpoints del backend.
 
-Autor
+### Autor
+---
 Nicolás Lozano Díaz
 Proyecto desarrollado para el curso de Desarrollo de Software.
 Repositorio GitHub: https://github.com/NicolasLozano/Man_Guito
+
+
+
 
 
