@@ -181,7 +181,8 @@ Parcial_Man_Guito/
 
 **Nicolás Lozano Díaz**  
 Proyecto académico desarrollado para la materia **Desarrollo de Software**.  
-Repositorio GitHub: [https://github.com/NicolasLozano/Man_Guito](https://github.com/NicolasLozano/Man_Guito)
+Repositorio GitHub: [https://github.com/ProgrammerCatyea/Parcial_Man_Guito.git](https://github.com/ProgrammerCatyea/Parcial_Man_Guito.git)
+
 
 
 
